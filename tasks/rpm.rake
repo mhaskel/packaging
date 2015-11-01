@@ -2,12 +2,12 @@ def prep_rpm_build_dir
   temp = Pkg::Util::File.mktemp
   tarball = "#{Pkg::Config.project}-#{Pkg::Config.version}.tar.gz"
   FileUtils.mkdir_p([temp, "#{temp}/SOURCES", "#{temp}/SPECS"])
-  cp_pr FileList["pkg/#{tarball}*"], "#{temp}/SOURCES"
+  Pkg::Util::File::cp_pr FileList["pkg/#{tarball}*"], "#{temp}/SOURCES"
   # If the file ext/redhat/<project>.spec exists in the tarball, we use it. If
   # it doesn't we try to 'erb' the file from a predicted template in source,
   # ext/redhat/<project>.spec.erb. If that doesn't exist, we fail. To do this,
   # we have to open the tarball.
-  cp_p("pkg/#{tarball}", temp)
+  Pkg::Util::File::cp_p("pkg/#{tarball}", temp)
 
   # Test for specfile in tarball
   %x(tar -tzf #{File.join(temp, tarball)}).split.grep(/\/ext\/redhat\/#{Pkg::Config.project}.spec$/)

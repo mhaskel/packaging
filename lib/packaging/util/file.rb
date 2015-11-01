@@ -23,6 +23,16 @@ module Pkg::Util::File
       end
     end
 
+    def cp_p(src, dest, options = {})
+      mandatory = { :preserve => true }
+      FileUtils.cp(src, dest, options.merge(mandatory))
+    end
+
+    def cp_pr(src, dest, options = {})
+      mandatory = { :preserve => true }
+      FileUtils.cp_r(src, dest, options.merge(mandatory))
+    end
+
     def file_exists?(file, args = { :required => false })
       exists = File.exist? file
       if !exists and args[:required]

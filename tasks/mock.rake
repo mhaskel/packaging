@@ -217,13 +217,13 @@ def build_rpm_with_mock(mocks)
             when /debuginfo/
               rm_rf(rpm)
             when /src\.rpm/
-              cp_pr(rpm, "pkg/pe/rpm/#{family}-#{version}-srpms")
+              Pkg::Util::File::cp_pr(rpm, "pkg/pe/rpm/#{family}-#{version}-srpms")
             when /i.?86/
-              cp_pr(rpm, "pkg/pe/rpm/#{family}-#{version}-i386")
+              Pkg::Util::File::cp_pr(rpm, "pkg/pe/rpm/#{family}-#{version}-i386")
             when /x86_64/
-              cp_pr(rpm, "pkg/pe/rpm/#{family}-#{version}-x86_64")
+              Pkg::Util::File::cp_pr(rpm, "pkg/pe/rpm/#{family}-#{version}-x86_64")
             when /noarch/
-              cp_pr(rpm, "pkg/pe/rpm/#{family}-#{version}-i386")
+              Pkg::Util::File::cp_pr(rpm, "pkg/pe/rpm/#{family}-#{version}-i386")
               FileUtils.ln("pkg/pe/rpm/#{family}-#{version}-i386/#{File.basename(rpm)}", "pkg/pe/rpm/#{family}-#{version}-x86_64/", :force => true, :verbose => true)
           end
         else
@@ -232,13 +232,13 @@ def build_rpm_with_mock(mocks)
             when /debuginfo/
               rm_rf(rpm)
             when /src\.rpm/
-              cp_pr(rpm, "pkg/#{family}/#{version}/#{subdir}/SRPMS")
+              Pkg::Util::File::cp_pr(rpm, "pkg/#{family}/#{version}/#{subdir}/SRPMS")
             when /i.?86/
-              cp_pr(rpm, "pkg/#{family}/#{version}/#{subdir}/i386")
+              Pkg::Util::File::cp_pr(rpm, "pkg/#{family}/#{version}/#{subdir}/i386")
             when /x86_64/
-              cp_pr(rpm, "pkg/#{family}/#{version}/#{subdir}/x86_64")
+              Pkg::Util::File::cp_pr(rpm, "pkg/#{family}/#{version}/#{subdir}/x86_64")
             when /noarch/
-              cp_pr(rpm, "pkg/#{family}/#{version}/#{subdir}/i386")
+              Pkg::Util::File::cp_pr(rpm, "pkg/#{family}/#{version}/#{subdir}/i386")
               FileUtils.ln("pkg/#{family}/#{version}/#{subdir}/i386/#{File.basename(rpm)}", "pkg/#{family}/#{version}/#{subdir}/x86_64/", :force => true, :verbose => true)
           end
         end

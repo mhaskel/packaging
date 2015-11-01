@@ -25,21 +25,6 @@
 
 # Utility methods used by the various rake tasks
 
-def check_var(varname, var)
-  deprecate('check_var', 'Pkg::Util.check_var')
-  Pkg::Util.check_var(varname, var)
-end
-
-def cp_pr(src, dest, options = {})
-  mandatory = { :preserve => true }
-  cp_r(src, dest, options.merge(mandatory))
-end
-
-def cp_p(src, dest, options = {})
-  mandatory = { :preserve => true }
-  cp(src, dest, options.merge(mandatory))
-end
-
 def set_cow_envs(cow)
   elements = /base-(.*)-(.*)\.cow/.match(cow)
   if elements.nil?
@@ -166,6 +151,16 @@ end
 #                                                                     #
 #######################################################################
 
+def cp_pr(src, dest, options = {})
+  deprecate('cp_pr', 'Pkg::Util::File::cp_pr')
+  Pkg::Util::File::cp_pr(src, dest, options)
+end
+
+def cp_p(src, dest, options = {})
+  deprecate('cp_p', 'Pkg::Util::File::cp_p')
+  Pkg::Util::File::cp_p(src, dest, options)
+end
+
 def invoke_task(task, *args)
   deprecate('invoke_task', 'Pkg::Util::RakeUtils.invoke_task')
   Pkg::Util::RakeUtils.invoke_task(task, *args)
@@ -275,3 +270,10 @@ def gpg_sign_file(file)
   deprecate("gpg_sign_file", "Pkg::Util::Gpg.sign_file")
   Pkg::Util::Gpg.sign_file(file)
 end
+
+def check_var(varname, var)
+  deprecate('check_var', 'Pkg::Util.check_var')
+  Pkg::Util.check_var(varname, var)
+end
+
+
