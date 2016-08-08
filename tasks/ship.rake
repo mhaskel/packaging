@@ -86,13 +86,26 @@ namespace :pl do
     Pkg::Util::Execution.retry_on_fail(:times => 3) do
       if File.directory?("pkg/deb")
 
-        pkgs = Dir["pkg/deb/**/*\.*"]
-        pkgs = pkgs.map { |f| f.gsub("pkg/deb", Pkg::Config.apt_repo_staging_path) }
-        puts "pkgs = #{pkgs}"
+        dists = Dir["pkg/deb/*"]
+        dists = dists.map { |f| f.gsub("pkg/deb", '') }
+        puts "dists = #{dists}"
+        dists.each do |dist|
+          components = Dir["pkg/deb/#{dist}/*"]
+          components = components.map { |f| f.gsub("pkg/deb/#{dist}", '') }
+          components.each do |component|
+            target_path = %x(ssh -t #{Pkg::Config.apt_signing_server} 'mktemp -d -t incoming-XXXXXX').chomp
+            puts "target_path = #{target_path}"
+            Pkg::Util::Net.rsync_to("pkg/deb/#{dist}/#{component}", Pkg::Config.apt_signing_server, target_path)
+            Pkg::Util::Net.remote_ssh_cmd(Pkg::Config.apt_signing_server, "aptly repo add -remove-files #{dist}-#{component} #{target_path}")
+            Pkg::Util::Net.remote_ssh_cmd(Pkg::Config.apt_signing_server, "rm -r #{target_path}")
+          end
+        end
+        #pkgs = pkgs.map { |f| f.gsub("pkg/deb", Pkg::Config.apt_repo_staging_path) }
+        #puts "pkgs = #{pkgs}"
 
-        Pkg::Util::Net.rsync_to('pkg/deb/', Pkg::Config.apt_signing_server, Pkg::Config.apt_repo_staging_path)
-        Pkg::Util::Net.remote_set_ownership(Pkg::Config.apt_signing_server, 'root', 'release', pkgs)
-        Pkg::Util::Net.remote_set_permissions(Pkg::Config.apt_signing_server, '0664', pkgs)
+        #Pkg::Util::Net.rsync_to('pkg/deb/', Pkg::Config.apt_signing_server, Pkg::Config.apt_repo_staging_path)
+        #Pkg::Util::Net.remote_set_ownership(Pkg::Config.apt_signing_server, 'root', 'release', pkgs)
+        #Pkg::Util::Net.remote_set_permissions(Pkg::Config.apt_signing_server, '0664', pkgs)
       else
         warn "No deb packages found to ship; nothing to do"
       end
