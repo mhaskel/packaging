@@ -87,11 +87,11 @@ namespace :pl do
       if File.directory?("pkg/deb")
 
         dists = Dir["pkg/deb/*"]
-        dists = dists.map { |f| f.gsub("pkg/deb", '') }
+        dists = dists.map { |f| f.gsub("pkg/deb/", '') }
         puts "dists = #{dists}"
         dists.each do |dist|
           components = Dir["pkg/deb/#{dist}/*"]
-          components = components.map { |f| f.gsub("pkg/deb/#{dist}", '') }
+          components = components.map { |f| f.gsub("pkg/deb/#{dist}/", '') }
           components.each do |component|
             target_path = %x(ssh -t #{Pkg::Config.apt_signing_server} 'mktemp -d -t incoming-XXXXXX').chomp
             puts "target_path = #{target_path}"
