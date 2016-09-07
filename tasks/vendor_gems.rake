@@ -6,7 +6,8 @@ if Pkg::Config.pre_tar_task
     task :vendor_gems do
       puts "PATH = #{ENV['PATH']}"
 
-      Pkg::Util::Tool.check_tool("bundle")
+      bundle = Pkg::Util::Tool.check_tool("bundle")
+      puts "BUNDLER = #{bundle}"
       require 'bundler'
 
       class UI
