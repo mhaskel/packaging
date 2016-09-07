@@ -4,6 +4,7 @@ if Pkg::Config.pre_tar_task
   namespace :package do
     desc "vendor gems required by project"
     task :vendor_gems do
+      ENV['PATH']="/opt/puppetlabs/puppet/bin:#{ENV['PATH']}"
       puts "PATH = #{ENV['PATH']}"
 
       bundle = Pkg::Util::Tool.check_tool("bundle")
