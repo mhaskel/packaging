@@ -4,6 +4,8 @@ if Pkg::Config.pre_tar_task
   namespace :package do
     desc "vendor gems required by project"
     task :vendor_gems do
+      puts "PATH = #{ENV['PATH']}"
+
       Pkg::Util::Tool.check_tool("bundle")
       require 'bundler'
 
