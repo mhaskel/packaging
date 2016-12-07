@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'open3'
 
 describe "Pkg::Util::Execution" do
   let(:command)    { "/usr/bin/do-something-important --arg1=thing2" }
@@ -28,13 +29,13 @@ describe "Pkg::Util::Execution" do
 
   describe "#ex" do
     it "should raise an error if the command fails" do
-      Pkg::Util::Execution.should_receive(:`).with(command).and_return(true)
+      Open3.should_receive(:capture3).with(command)
       Pkg::Util::Execution.should_receive(:success?).and_return(false)
       expect{ Pkg::Util::Execution.ex(command) }.to raise_error(RuntimeError)
     end
 
     it "should return the output of the command for success" do
-      Pkg::Util::Execution.should_receive(:`).with(command).and_return(output)
+      Open3.should_receive(:capture3).with(command).and_return([output, '', 0])
       Pkg::Util::Execution.should_receive(:success?).and_return(true)
       Pkg::Util::Execution.ex(command).should == output
     end

@@ -22,18 +22,19 @@ module Pkg::Util::Execution
     # purport to both return the results of the command execution (ala `%x{cmd}`)
     # while also raising an exception if a command does not succeed (ala `sh "cmd"`).
     def ex(command, debug = false)
+      require 'open3'
       puts "Executing '#{command}'..." if debug
-      ret = `#{command}`
-      unless Pkg::Util::Execution.success?
-        raise RuntimeError
+      stdout, stderr, exitstatus = Open3.capture3(command)
+      unless Pkg::Util::Execution.success?(exitstatus)
+        raise "#{stdout}\n#{stderr}"
       end
 
       if debug
         puts "Command '#{command}' returned:"
-        puts ret
+        puts stdout
       end
 
-      ret
+      stdout
     end
 
     # Loop a block up to the number of attempts given, exiting when we receive success
