@@ -125,7 +125,7 @@ return labelMap.get(binding.getVariables().get(&quot;command&quot;));</groovyScr
   </axes>
   <builders>
     <hudson.tasks.Shell>
-      <command>#!/bin/bash
+      <command>#!/bin/bash --login
 set -e
 ### Create a local clone of the git-bundle that was passed
 # The bundle is wrapped in a tarball. We don't need to know the project that is
@@ -139,6 +139,8 @@ command=$(echo $command | sed 's/_/:/1')
 
 [ -f &quot;PROJECT_BUNDLE&quot; ] || exit 1
 mkdir project &amp;&amp; tar -xzf PROJECT_BUNDLE -C project/
+
+rvm use system || :
 
 pushd project
   git clone --recursive $(ls) git_repo
