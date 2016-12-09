@@ -102,7 +102,10 @@ if Pkg::Config.pre_tar_task
         # Fetch Rubygem specs
         begin
           Bundler::Fetcher.fetch(spec) if spec.source.is_a?(Bundler::Source::Rubygems)
-        rescue
+        rescue => e
+          puts e
+          puts `gem list bundler`
+          puts `ruby --version`
           Bundler::Fetcher.fetch_spec(spec) if spec.source.is_a?(Bundler::Source::Rubygems)
         end
         # Cache everything but bundler itself...
