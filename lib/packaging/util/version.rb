@@ -9,15 +9,15 @@ module Pkg::Util::Version
 
     def git_co(ref)
       Pkg::Util.in_project_root do
-        Pkg::Util::Execution.ex("#{GIT} reset --hard ; #{GIT} checkout #{ref}")
-        $?.success? or fail "Could not checkout #{ref} git branch to build package from...exiting"
+        ret = Pkg::Util::Execution.ex("#{GIT} reset --hard ; #{GIT} checkout #{ref}")
+        Pkg::Util::Execution.success?(ret) or fail "Could not checkout #{ref} git branch to build package from...exiting"
       end
     end
 
     def git_tagged?
       Pkg::Util.in_project_root do
-        Pkg::Util::Execution.ex("#{GIT} describe >#{DEVNULL} 2>&1")
-        $?.success?
+        ret = Pkg::Util::Execution.ex("#{GIT} describe >#{DEVNULL} 2>&1")
+        Pkg::Util::Execution.success?(ret)
       end
     end
 
@@ -57,8 +57,8 @@ module Pkg::Util::Version
     # Return true if we're in a git repo, otherwise false
     def is_git_repo?
       Pkg::Util.in_project_root do
-        Pkg::Util::Execution.ex("#{GIT} rev-parse --git-dir > #{DEVNULL} 2>&1")
-        $?.success?
+        ret = Pkg::Util::Execution.ex("#{GIT} rev-parse --git-dir > #{DEVNULL} 2>&1")
+        Pkg::Util::Execution.success?(ret)
       end
     end
 
@@ -102,7 +102,7 @@ module Pkg::Util::Version
     def run_git_describe_internal
       Pkg::Util.in_project_root do
         raw = Pkg::Util::Execution.ex("#{GIT} describe --tags --dirty 2>#{DEVNULL}")
-        $?.success? ? raw : nil
+        Pkg::Util::Execution.success?(raw) ? raw : nil
       end
     end
 
