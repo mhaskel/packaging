@@ -34,7 +34,7 @@ module Pkg::Util::Execution
         puts stdout
       end
 
-      stdout
+      exitstatus
     end
 
     # Loop a block up to the number of attempts given, exiting when we receive success
