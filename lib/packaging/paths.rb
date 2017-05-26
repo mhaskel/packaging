@@ -10,39 +10,29 @@ module Pkg::Paths
 
   # Given a path to an artifact, divine the appropriate platform tag associated
   # with the artifact and path
-  #
-  # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity
-  # rubocop:disable Metrics/MethodLength, Metrics/PerceivedComplexity
   def tag_from_artifact_path(path)
-    Pkg::Platforms.supported_platforms.each do |platform|
-      next unless path.include?(platform)
-      if platform == 'windows'
-        # Windows is special, we don't care about the version, so we put in
-        # 2012 here mainly as a place holder
-        Pkg::Platforms.arches_for_platform_version(platform, '2012').each do |architecture|
-          return "#{platform}-2012-#{architecture}" if path.include?(architecture)
+    Pkg::Platforms.platform_tags.each do |tag|
+      platform, version, arch = Pkg::Platforms.parse_platform_tag(tag)
+      if path.include?(platform)
+        if path =~ /#{platform}(\/|-)?#{version}/
+          if path.include?(arch)
+            return tag
+          elsif path.include?('noarch')
+            # Default to 64bit for no reason in particular
+            return "#{platform}-#{version}-x86_64"
+          end
+        elsif platform == 'windows' || platform == 'cumulus' || platform == 'huaweios'
+          if path.include?(arch)
+            return tag
+          end
         end
-        # Default to 64bit if we can't find an architecture
-        return "#{platform}-2012-x64"
-      end
-      Pkg::Platforms.versions_for_platform(platform).each do |version|
-        next unless path =~ /#{platform}(\/|-)?#{version}/
-        # Default to 64bit for no reason in particular
-        return "#{platform}-#{version}-x86_64" if path.include?('noarch')
-        Pkg::Platforms.arches_for_platform_version(platform, version).each do |architecture|
-          return "#{platform}-#{version}-#{architecture}" if path.include?(architecture)
+      elsif Pkg::Platforms.codename_for_platform_version(platform, version) && path.include?(Pkg::Platforms.codename_for_platform_version(platform, version))
+        if path.include?(arch)
+          return tag
+        elsif path.include?('all')
+          # Default to 64bit for no reason in particular
+          return "#{platform}-#{version}-amd64"
         end
-      end
-    end
-
-    # If we haven't been able to match against a platform name, we're likely
-    # dealing with a codename
-    Pkg::Platforms.codenames('deb').each do |codename|
-      next unless path.include?(codename)
-      # Default to 64bit for no reason in particular
-      return "#{Pkg::Platforms.codename_to_platform_version(codename).join('-')}-amd64" if path.include?('all')
-      Pkg::Platforms.arches_for_codename(codename).each do |arch|
-        return "#{Pkg::Platforms.codename_to_platform_version(codename).join('-')}-#{arch}" if path.include?(arch)
       end
     end
     raise "I couldn't figure out which platform tag corresponds to #{path}. Teach me?"
