@@ -11,31 +11,38 @@ module Pkg::Paths
   # Given a path to an artifact, divine the appropriate platform tag associated
   # with the artifact and path
   def tag_from_artifact_path(path)
-    Pkg::Platforms.platform_tags.each do |tag|
-      platform, version, arch = Pkg::Platforms.parse_platform_tag(tag)
-      if path.include?(platform)
-        if path =~ /#{platform}(\/|-)?#{version}/
-          if path.include?(arch)
-            return tag
-          elsif path.include?('noarch')
-            # Default to 64bit for no reason in particular
-            return "#{platform}-#{version}-x86_64"
-          end
-        elsif platform == 'windows' || platform == 'cumulus' || platform == 'huaweios'
-          if path.include?(arch)
-            return tag
-          end
-        end
-      elsif Pkg::Platforms.codename_for_platform_version(platform, version) && path.include?(Pkg::Platforms.codename_for_platform_version(platform, version))
-        if path.include?(arch)
-          return tag
-        elsif path.include?('all')
-          # Default to 64bit for no reason in particular
-          return "#{platform}-#{version}-amd64"
+    platform = Pkg::Platforms.supported_platforms.find { |p| path =~ /#{p}/ }
+    warn "Found platform #{platform} for #{path}"
+    if platform == 'windows'
+      version = '2012'
+      arch = Pkg::Platforms::arches_for_platform_version(platform, version).find { |a| path =~ /#{a}/ }
+      if arch.nil?
+        arch = 'x64'
+      end
+    elsif !platform.nil?
+      version = Pkg::Platforms.versions_for_platform(platform).find { |v|  path =~ /#{platform}(\/|-)?#{v}/ }
+      unless version.nil?
+        arch = Pkg::Platforms::arches_for_platform_version(platform, version).find { |a| path =~ /#{a}/ }
+        if arch.nil? && path =~ /ppc/
+          arch = 'power'
+        elsif arch.nil?
+          arch = 'x86_64'
         end
       end
     end
-    raise "I couldn't figure out which platform tag corresponds to #{path}. Teach me?"
+    # if we didn't find a platform or a version, probably a codename
+    if platform.nil? || version.nil?
+      codename = Pkg::Platforms.codenames('deb').find { |c| path =~ /#{c}/ }
+      fail "I can't find a codename or platform in #{path}, teach me?" if codename.nil?
+      platform, version = Pkg::Platforms.codename_to_platform_version(codename)
+      fail "I can't find a platform and version from #{codename}, teach me?" if platform.nil? || version.nil?
+      arch = Pkg::Platforms.arches_for_platform_version(platform, version).find { |a| path =~ /#{a}/ }
+      if arch.nil?
+        arch = 'amd64'
+      end
+    end
+
+    return "#{platform}-#{version}-#{arch}"
   end
 
   def artifacts_path(platform_tag, package_url = nil, path_prefix = 'artifacts')

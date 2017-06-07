@@ -5,8 +5,10 @@ module Pkg::Util::Ship
 
   def collect_packages(pkg_exts, excludes = []) # rubocop:disable Metrics/MethodLength
     pkgs = pkg_exts.map { |ext| Dir.glob(ext) }.flatten
-    excludes.each do |exclude|
-      pkgs.delete_if { |p| p.match(exclude) }
+    if excludes
+      excludes.each do |exclude|
+        pkgs.delete_if { |p| p.match(exclude) }
+      end
     end
     if pkgs.empty?
       $stdout.puts "No packages with (#{pkg_exts.join(', ')}) extensions found staged in 'pkg'"
