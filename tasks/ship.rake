@@ -252,7 +252,8 @@ namespace :pl do
   task :ship_svr4 do
     Pkg::Util::Execution.retry_on_fail(:times => 3) do
       if File.directory?("pkg/solaris/10")
-        Pkg::Util::Net.rsync_to('pkg/solaris/10', Pkg::Config.svr4_host, Pkg::Config.svr4_path)
+        #Pkg::Util::Net.rsync_to('pkg/solaris/10', Pkg::Config.svr4_host, Pkg::Config.svr4_path)
+        Pkg::Util::Ship.ship_pkgs(['pkg/**/*.pkg.gz'], Pkg::Config.svr4_host, Pkg::Config.svr4_path)
       end
     end
   end
@@ -261,7 +262,8 @@ namespace :pl do
   task :ship_p5p do
     Pkg::Util::Execution.retry_on_fail(:times => 3) do
       if File.directory?("pkg/solaris/11")
-        Pkg::Util::Net.rsync_to('pkg/solaris/11', Pkg::Config.p5p_host, Pkg::Config.p5p_path)
+        #Pkg::Util::Net.rsync_to('pkg/solaris/11', Pkg::Config.p5p_host, Pkg::Config.p5p_path)
+        Pkg::Util::Ship.ship_pkgs(['pkg/**/*.p5p'], Pkg::Config.p5p_host, Pkg::Config.p5p_path)
       end
     end
   end
