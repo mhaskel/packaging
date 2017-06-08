@@ -35,7 +35,7 @@ module Pkg::Util::Ship
   end
 
   # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
-  def ship_pkgs(pkg_exts, staging_server, remote_path, options = { excludes: [], chattr: true })
+  def ship_pkgs(pkg_exts, staging_server, remote_path, options = { excludes: [], chattr: true, addtl_path_to_sub: nil })
     # First find the packages to be shipped. We must find them before moving
     # to our temporary staging directory
     local_packages = collect_packages(pkg_exts, options[:excludes])
@@ -52,6 +52,7 @@ module Pkg::Util::Ship
       staged_pkgs.each do |pkg|
         Pkg::Util::Execution.retry_on_fail(times: 3) do
           remote_pkg = pkg.gsub('pkg', remote_path)
+          remote_pkg.gsub!(options[:addtl_path_to_sub], '') unless options[:addtl_path_to_sub].nil?
           remote_basepath = File.dirname(remote_pkg)
           Pkg::Util::Net.remote_ssh_cmd(staging_server, "mkdir -p #{remote_basepath}")
           Pkg::Util::Net.rsync_to(
