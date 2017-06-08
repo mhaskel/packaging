@@ -270,7 +270,7 @@ namespace :pl do
 
   desc "ship apple dmg to #{Pkg::Config.dmg_staging_server}"
   task ship_dmg: 'pl:fetch' do
-    Pkg::Util::Ship.ship_pkgs(['pkg/**/*.dmg'], Pkg::Config.dmg_staging_server, Pkg::Config.dmg_path, addtl_path_to_sub: '/apple')
+    Pkg::Util::Ship.ship_pkgs(['pkg/**/*.dmg'], Pkg::Config.dmg_staging_server, Pkg::Config.dmg_path, addtl_path_to_sub: '/mac')
   end
 
   desc "ship Arista EOS swix packages and signatures to #{Pkg::Config.swix_staging_server}"
