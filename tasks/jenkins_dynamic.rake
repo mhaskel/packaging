@@ -31,7 +31,7 @@ namespace :pl do
       Pkg::Config.final_mocks.split(" ").each do |mock|
         if mock =~ /el-7/
           puts "PWD == #{ENV['PWD']}"
-          fail Dir.glob("*")
+          fail "#{Dir.glob("*").join("\n")}"
         else
           puts "skipping #{mock} for now"
         end
