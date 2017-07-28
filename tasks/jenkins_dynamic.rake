@@ -29,7 +29,7 @@ namespace :pl do
       work_dir           = Pkg::Util::File.mktemp
       #fail Pkg::Config.print_config
       Pkg::Config.final_mocks.split(" ").each do |mock|
-        if mock =~ 'el-7'
+        if mock =~ /el-7/
           puts "PWD == #{ENV['PWD']}"
           fail Dir.glob("*")
         else
