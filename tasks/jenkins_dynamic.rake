@@ -31,7 +31,10 @@ namespace :pl do
       Pkg::Config.final_mocks.split(" ").each do |mock|
         if mock =~ /el-7/
           Pkg::Util::RakeUtils.invoke_task("package:tar")
-          fail "PWD = #{ENV['PWD']}\n#{Dir.glob("**/*").join("\n")}"
+          Dir.chdir('pkg') do
+            `tar xf #{Dir.glob("*.gz")}`
+            fail "PWD = #{Dir.pwd}\n#{Dir.glob("**/*").join("\n")}"
+          end
         else
           puts "skipping #{mock} for now"
         end
