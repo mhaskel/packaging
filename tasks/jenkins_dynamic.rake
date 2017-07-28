@@ -30,7 +30,7 @@ namespace :pl do
       Pkg::Util::RakeUtils.invoke_task("package:tar")
       `tar xf #{Dir.glob("*.gz").join('')}`
       Dir.chdir('pkg') do
-        Dir.chdir("#{Pkg::Config.name}-#{Pkg::Config.version}") do
+        Dir.chdir("#{Pkg::Config.project}-#{Pkg::Config.version}") do
           Pkg::Config.final_mocks.split(" ").each do |mock|
             if mock =~ /el-7/
               fail "#{Dir.pwd}\n===\n#{Dir.glob('**/*')}\n===\n#{Pkg::Config.print_config}"
