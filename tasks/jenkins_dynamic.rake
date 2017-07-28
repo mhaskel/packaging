@@ -27,7 +27,15 @@ namespace :pl do
       Pkg::Util.require_library_or_fail 'json'
 
       work_dir           = Pkg::Util::File.mktemp
-      fail Pkg::Config.print_config
+      #fail Pkg::Config.print_config
+      Pkg::Config.final_mocks.each do |mock|
+        if mock =~ 'el-7'
+          puts "PWD == #{ENV['PWD']}"
+          fail Dir.glob("*")
+        else
+          puts "skipping #{mock} for now"
+        end
+      end
     end
 
     # Task to trigger the jenkins job we just created. This uses a lot of the
