@@ -32,7 +32,7 @@ namespace :pl do
         Dir.chdir("#{Pkg::Config.project}-#{Pkg::Config.version}") do
           Pkg::Config.final_mocks.split(" ").each do |mock|
             if mock =~ /el-7/
-              `./controller.sh mock`
+              `source controller.sh mock`
             else
               puts "skipping #{mock} for now"
             end
