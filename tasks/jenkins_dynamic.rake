@@ -28,8 +28,8 @@ namespace :pl do
 
       #fail Pkg::Config.print_config
       Pkg::Util::RakeUtils.invoke_task("package:tar")
-      `tar xf #{Dir.glob("*.gz").join('')}`
       Dir.chdir('pkg') do
+        `tar xf #{Dir.glob("*.gz").join('')}`
         Dir.chdir("#{Pkg::Config.project}-#{Pkg::Config.version}") do
           Pkg::Config.final_mocks.split(" ").each do |mock|
             if mock =~ /el-7/
