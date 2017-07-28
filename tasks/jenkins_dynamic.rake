@@ -27,7 +27,7 @@ namespace :pl do
       Pkg::Util.require_library_or_fail 'json'
 
       work_dir           = Pkg::Util::File.mktemp
-      fail Pkg.Config
+      fail Pkg::Config.print_config
     end
 
     # Task to trigger the jenkins job we just created. This uses a lot of the
