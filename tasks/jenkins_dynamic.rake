@@ -30,8 +30,8 @@ namespace :pl do
       #fail Pkg::Config.print_config
       Pkg::Config.final_mocks.split(" ").each do |mock|
         if mock =~ /el-7/
-          puts "PWD == #{ENV['PWD']}"
-          fail "#{Dir.glob("*").join("\n")}"
+          Pkg::Util::RakeUtils.invoke_task("package:tar")
+          fail "PWD = #{ENV['PWD']}\n#{Dir.glob("**/*").join("\n")}"
         else
           puts "skipping #{mock} for now"
         end
