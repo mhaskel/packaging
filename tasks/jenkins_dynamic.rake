@@ -33,6 +33,7 @@ namespace :pl do
           Pkg::Config.final_mocks.split(" ").each do |mock|
             if mock =~ /el-7/
               `bash controller.sh #{mock}`
+              `cp *.rpm ~/`
             else
               puts "skipping #{mock} for now"
             end
