@@ -32,7 +32,7 @@ namespace :pl do
         if mock =~ /el-7/
           Pkg::Util::RakeUtils.invoke_task("package:tar")
           Dir.chdir('pkg') do
-            `tar xf #{Dir.glob("*.gz")}`
+            `tar xf #{Dir.glob("*.gz").join('')}`
             fail "PWD = #{Dir.pwd}\n#{Dir.glob("**/*").join("\n")}"
           end
         else
