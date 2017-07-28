@@ -26,17 +26,18 @@ namespace :pl do
       # here also if JSON isn't available
       Pkg::Util.require_library_or_fail 'json'
 
-      work_dir           = Pkg::Util::File.mktemp
       #fail Pkg::Config.print_config
-      Pkg::Config.final_mocks.split(" ").each do |mock|
-        if mock =~ /el-7/
-          Pkg::Util::RakeUtils.invoke_task("package:tar")
-          Dir.chdir('pkg') do
-            `tar xf #{Dir.glob("*.gz").join('')}`
-            fail "PWD = #{Dir.pwd}\n#{Dir.glob("**/*").join("\n")}"
+      Pkg::Util::RakeUtils.invoke_task("package:tar")
+      `tar xf #{Dir.glob("*.gz").join('')}`
+      Dir.chdir('pkg') do
+        Dir.chdir("#{Pkg::Config.name}-#{Pkg::Config.version}") do
+          Pkg::Config.final_mocks.split(" ").each do |mock|
+            if mock =~ /el-7/
+              fail "#{Dir.pwd}\n===\n#{Dir.glob('**/*')}\n===\n#{Pkg::Config.print_config}"
+            else
+              puts "skipping #{mock} for now"
+            end
           end
-        else
-          puts "skipping #{mock} for now"
         end
       end
     end
