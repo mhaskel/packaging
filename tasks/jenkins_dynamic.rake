@@ -33,14 +33,8 @@ namespace :pl do
         Dir.chdir("#{Pkg::Config.project}-#{Pkg::Config.version}") do
           Pkg::Config.final_mocks.split(" ").each do |mock|
             FileUtils.mkdir("../../../../output/#{mock}") unless File.directory?("../../../../output/#{mock}")
-            if mock =~ /el-7/
-              `bash controller.sh #{mock}`
-              FileUtils.cp(Dir.glob("*.rpm"), "../../../../output/#{mock}")
-            #elsif mock =~ /el-6/
-            #elsif mock =~ /sles-12/
-            else
-              puts "skipping #{mock} for now"
-            end
+            `bash controller.sh #{mock}`
+            FileUtils.cp(Dir.glob("*.rpm"), "../../../../output/#{mock}")
           end
         end
       end
