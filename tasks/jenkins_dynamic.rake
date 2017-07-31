@@ -35,7 +35,7 @@ namespace :pl do
             FileUtils.mkdir("../../../../output/#{mock}") unless File.directory?("../../../../output/#{mock}")
             if mock =~ /el-7/
               `bash controller.sh #{mock}`
-              FileUtils.cp(Dir.glob("*.rpm"), "../../../output/#{mock}")
+              FileUtils.cp(Dir.glob("*.rpm"), "../../../../output/#{mock}")
             #elsif mock =~ /el-6/
             #elsif mock =~ /sles-12/
             else
