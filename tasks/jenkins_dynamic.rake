@@ -27,7 +27,7 @@ namespace :pl do
       Pkg::Util.require_library_or_fail 'json'
 
       Pkg::Util::RakeUtils.invoke_task("package:tar")
-      FileUitls.mkdir('../../output')
+      FileUtils.mkdir('../../output')
       Dir.chdir('pkg') do
         `tar xf #{Dir.glob("*.gz").join('')}`
         Dir.chdir("#{Pkg::Config.project}-#{Pkg::Config.version}") do
