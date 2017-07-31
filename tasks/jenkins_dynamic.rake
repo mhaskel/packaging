@@ -27,13 +27,17 @@ namespace :pl do
       Pkg::Util.require_library_or_fail 'json'
 
       Pkg::Util::RakeUtils.invoke_task("package:tar")
+      FileUitls.mkdir('../../output')
       Dir.chdir('pkg') do
         `tar xf #{Dir.glob("*.gz").join('')}`
         Dir.chdir("#{Pkg::Config.project}-#{Pkg::Config.version}") do
           Pkg::Config.final_mocks.split(" ").each do |mock|
+            FileUtils.mkdir("../../../output/#{mock}")
             if mock =~ /el-7/
               `bash controller.sh #{mock}`
-              `cp *.rpm ~/`
+              FileUtils.cp(Dir.glob("*.rpm"), "../../../output/#{mock}")
+            #elsif mock =~ /el-6/
+            #elsif mock =~ /sles-12/
             else
               puts "skipping #{mock} for now"
             end
