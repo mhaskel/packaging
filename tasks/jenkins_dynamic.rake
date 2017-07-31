@@ -32,7 +32,7 @@ namespace :pl do
         `tar xf #{Dir.glob("*.gz").join('')}`
         Dir.chdir("#{Pkg::Config.project}-#{Pkg::Config.version}") do
           Pkg::Config.final_mocks.split(" ").each do |mock|
-            FileUtils.mkdir("../../../output/#{mock}")
+            FileUtils.mkdir("../../../../output/#{mock}")
             if mock =~ /el-7/
               `bash controller.sh #{mock}`
               FileUtils.cp(Dir.glob("*.rpm"), "../../../output/#{mock}")
