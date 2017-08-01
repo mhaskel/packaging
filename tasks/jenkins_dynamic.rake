@@ -27,14 +27,25 @@ namespace :pl do
       Pkg::Util.require_library_or_fail 'json'
 
       Pkg::Util::RakeUtils.invoke_task("package:tar")
-      FileUtils.mkdir('../../output') unless File.directory?('../../output')
+      # at this point we're in a directory like puppetserver/target/staging
+      # and we want the output to be under puppetserver
+      base_output = '../../output'
+      # we've got two chdirs before we actually build the packages, set up
+      # this variable so we can copy things more easily
+      nested_output = '../../../../output'
+      FileUtils.mkdir(base_out) unless File.directory?(base_out)
       Dir.chdir('pkg') do
         `tar xf #{Dir.glob("*.gz").join('')}`
         Dir.chdir("#{Pkg::Config.project}-#{Pkg::Config.version}") do
           Pkg::Config.final_mocks.split(" ").each do |mock|
-            FileUtils.mkdir("../../../../output/#{mock}") unless File.directory?("../../../../output/#{mock}")
+            FileUtils.mkdir("#{nested_output}/#{mock}") unless File.directory?("#{nested_output}/#{mock}")
             `bash controller.sh #{mock}`
-            FileUtils.mv(Dir.glob("*.rpm"), "../../../../output/#{mock}")
+            FileUtils.mv(Dir.glob("*.rpm"), "#{nested_output}/#{mock}")
+          end
+          Pkg::Config.cows.split(" ").each do |cow|
+            FileUtils.mkdir("#{nested_output}/#{cow}") unless File.directory?("#{nested_output}/#{cow}")
+            `bash controller.sh #{cow}`
+            FileUtils.mv(Dir.glob("*.deb"), "#{nested_output}/#{cow}")
           end
         end
       end
