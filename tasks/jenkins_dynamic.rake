@@ -26,27 +26,112 @@ namespace :pl do
       # here also if JSON isn't available
       Pkg::Util.require_library_or_fail 'json'
 
-      Pkg::Util::RakeUtils.invoke_task("package:tar")
-      # at this point we're in a directory like puppetserver/target/staging
-      # and we want the output to be under puppetserver
-      base_output = '../../output'
-      # we've got two chdirs before we actually build the packages, set up
-      # this variable so we can copy things more easily
-      nested_output = '../../../../output'
-      FileUtils.mkdir(base_output) unless File.directory?(base_output)
-      Dir.chdir('pkg') do
-        `tar xf #{Dir.glob("*.gz").join('')}`
-        Dir.chdir("#{Pkg::Config.project}-#{Pkg::Config.version}") do
-          Pkg::Config.final_mocks.split(" ").each do |mock|
-            FileUtils.mkdir("#{nested_output}/#{mock}") unless File.directory?("#{nested_output}/#{mock}")
-            `bash controller.sh #{mock}`
-            FileUtils.mv(Dir.glob("*.rpm"), "#{nested_output}/#{mock}")
+      # The uber_build.xml.erb file is an XML erb template that will define a
+      # job in Jenkins with all of the appropriate tasks
+      work_dir           = Pkg::Util::File.mktemp
+      template_dir       = File.join(File.dirname(__FILE__), '..', 'templates')
+      templates          = ['repo.xml.erb', 'packaging.xml.erb']
+      templates << ('msi.xml.erb') if Pkg::Config.build_msi
+      templates << ('downstream.xml.erb') if ENV['DOWNSTREAM_JOB']
+
+      # Generate an XML file for every job configuration erb and attempt to
+      # create a jenkins job from that XML config
+      templates.each do |t|
+        erb_template  = File.join(template_dir, t)
+        xml_file = File.join(work_dir, t.gsub('.erb', ''))
+        Pkg::Util::File.erb_file(erb_template, xml_file, nil, :binding => Pkg::Config.get_binding)
+        # If we're creating a job meant to run on a windows box, we need to limit the path length
+        # Max path length allowed is 260 chars, which we manage to exceed with this job name. Luckily,
+        # simply using the short sha rather than the long sha gets us just under the length limit. Gross fix,
+        # I know, but hey, it works for now.
+        if t == "msi.xml.erb"
+          ref = Pkg::Config.short_ref
+        else
+          ref = Pkg::Config.ref
+        end
+        job_name  = "#{Pkg::Config.project}-#{t.gsub('.xml.erb', '')}-#{Pkg::Config.build_date}-#{ref}"
+        puts "Checking for existence of #{job_name}..."
+        if Pkg::Util::Jenkins.jenkins_job_exists?(job_name)
+          raise "Job #{job_name} already exists on #{Pkg::Config.jenkins_build_host}"
+        else
+          Pkg::Util::Execution.retry_on_fail(:times => 3) do
+            url = Pkg::Util::Jenkins.create_jenkins_job(job_name, xml_file)
+            if t == "packaging.xml.erb"
+              ENV["PACKAGE_BUILD_URL"] = url
+            end
+            puts "Verifying job created successfully..."
+            unless Pkg::Util::Jenkins.jenkins_job_exists?(job_name)
+              raise "Unable to verify Jenkins job, trying again..."
+            end
+            puts "Jenkins job created at #{url}"
           end
-          Pkg::Config.cows.split(" ").each do |cow|
-            FileUtils.mkdir("#{nested_output}/#{cow}") unless File.directory?("#{nested_output}/#{cow}")
-            `bash controller.sh #{cow}`
-            FileUtils.mv(Dir.glob("*.deb"), "#{nested_output}/#{cow}")
+        end
+      end
+      rm_r work_dir
+      packaging_name = "#{Pkg::Config.project}-packaging-#{Pkg::Config.build_date}-#{Pkg::Config.ref}"
+      Pkg::Util::RakeUtils.invoke_task("pl:jenkins:trigger_dynamic_job", packaging_name)
+
+      if poll_interval > 0
+        ##
+        # Wait for the '*packaging*' job to finish.
+        #
+        name = "#{Pkg::Config.project}-packaging-#{Pkg::Config.build_date}-#{Pkg::Config.ref}"
+        packaging_job_url = "http://#{Pkg::Config.jenkins_build_host}/job/#{name}"
+
+        packaging_build_hash = nil
+        Pkg::Util::Execution.retry_on_fail(:times => 10, :delay => 1) do
+          packaging_build_hash = Pkg::Util::Jenkins.poll_jenkins_job(packaging_job_url)
+        end
+
+        ##
+        # Output status of packaging build for cli consumption
+        #
+        puts "Packaging #{packaging_build_hash['result']}"
+
+        if packaging_build_hash['result'] == 'FAILURE'
+          fail "Please see #{packaging_job_url} for failure details."
+        end
+
+        if Pkg::Config.build_msi
+          ##
+          # Wait for the '*msi*' job to finish.
+          #
+          name = "#{Pkg::Config.project}-msi-#{Pkg::Config.build_date}-#{Pkg::Config.short_ref}"
+          msi_job_url = "http://#{Pkg::Config.jenkins_build_host}/job/#{name}"
+
+          msi_build_hash = nil
+          Pkg::Util::Execution.retry_on_fail(:times => 10, :delay => 1) do
+            msi_build_hash = Pkg::Util::Jenkins.poll_jenkins_job(msi_job_url)
           end
+
+          ##
+          # Output status of msi build for cli consumption
+          #
+          puts "MSI #{msi_build_hash['result']}"
+
+          if msi_build_hash['result'] == 'FAILURE'
+            fail "Please see #{msi_job_url} for failure details."
+          end
+        end
+
+        ##
+        # Wait for the '*repo*' job to finish.
+        #
+        name = "#{Pkg::Config.project}-repo-#{Pkg::Config.build_date}-#{Pkg::Config.ref}"
+        repo_job_url = "http://#{Pkg::Config.jenkins_build_host}/job/#{name}"
+
+        repo_build_hash = nil
+        Pkg::Util::Execution.retry_on_fail(:times => 10, :delay => 1) do
+          repo_build_hash = Pkg::Util::Jenkins.poll_jenkins_job(repo_job_url)
+        end
+
+        ##
+        # Output status of repo build for cli consumption
+        #
+        puts "Repo Creation #{repo_build_hash['result']}"
+
+        if repo_build_hash['result'] == 'FAILURE'
+          fail "Please see #{repo_job_url} for failure details."
         end
       end
     end
