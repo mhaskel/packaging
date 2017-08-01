@@ -33,7 +33,7 @@ namespace :pl do
       # we've got two chdirs before we actually build the packages, set up
       # this variable so we can copy things more easily
       nested_output = '../../../../output'
-      FileUtils.mkdir(base_out) unless File.directory?(base_out)
+      FileUtils.mkdir(base_output) unless File.directory?(base_output)
       Dir.chdir('pkg') do
         `tar xf #{Dir.glob("*.gz").join('')}`
         Dir.chdir("#{Pkg::Config.project}-#{Pkg::Config.version}") do
