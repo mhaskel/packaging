@@ -34,7 +34,7 @@ namespace :pl do
           Pkg::Config.final_mocks.split(" ").each do |mock|
             FileUtils.mkdir("../../../../output/#{mock}") unless File.directory?("../../../../output/#{mock}")
             `bash controller.sh #{mock}`
-            FileUtils.cp(Dir.glob("*.rpm"), "../../../../output/#{mock}")
+            FileUtils.mv(Dir.glob("*.rpm"), "../../../../output/#{mock}")
           end
         end
       end
