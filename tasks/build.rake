@@ -9,15 +9,11 @@ namespace :pl do
     Pkg::Util::Version.git_co(Pkg::Config.ref)
     Rake::Task[Pkg::Config.task[:task]].invoke(Pkg::Config.task[:args])
   end
-  desc "Dynamic Jenkins UBER build: Build all the things with ONE job"
+  desc ""
   task :local_build => "pl:fetch" do
     # If we have a dirty source, bail, because changes won't get reflected in
     # the package builds
     Pkg::Util::Version.fail_on_dirty_source
-
-    # Use JSON to parse the json part of the submission, so we want to fail
-    # here also if JSON isn't available
-    Pkg::Util.require_library_or_fail 'json'
 
     Pkg::Util::RakeUtils.invoke_task("package:tar")
     # at this point we're in a directory like puppetserver/target/staging
