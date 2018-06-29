@@ -1,0 +1,3 @@
+morgan/packaging:
+  Build:
+    - echo "Build!"
