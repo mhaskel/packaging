@@ -1,3 +1,5 @@
 morgan/packaging:
   Build:
-    - echo "Build!"
+    - git remote -v
+    - git tag
+    - git branch -rl
