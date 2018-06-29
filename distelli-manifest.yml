@@ -1,5 +1,5 @@
 morgan/packaging:
   Build:
     - git remote -v
+    - git fetch origin 'refs/tags/*:refs/tags/*'
     - git tag
-    - git branch -rl
