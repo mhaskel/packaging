@@ -168,4 +168,10 @@ describe 'artifactory.rb' do
       ENV['ARTIFACTORY_API_KEY'] = original_artifactory_api_key
     end
   end
+
+  describe '#check_promotion' do
+  	it 'prints a bunch of shit' do
+  		artifact.promote_package('el-6-x86_64', '2018.1')
+  	end
+  end
 end

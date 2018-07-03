@@ -230,6 +230,46 @@ module Pkg
       raise fail_message
     end
 
+
+
+    # this is shit
+    # @param package_ref [String] the package to be promoted
+    # @param pe_version [String] enterprise version promoting to
+    #
+    # we get the pe_version from enterprise-dist promote rake task
+    def promote_package(package_ref, pe_version)
+      # take package SHA from promote call, find the packages that are in artifactory
+      # and copy them into the enterprise repos and then update in enterprise-dist .json
+      #
+      #
+      # generic method that takes a package at a location and puts it in another
+      # take package_ref, find the package, copy it over to the correct location
+      # i believe this name is going to be the highest level...not sure. will have to ask
+
+      # find the package that needs to be promoted
+      #artifact = Artifactory::Resource::Artifact.search(name: package_ref)
+      puts package_ref
+      artifact = package_ref
+      puts "artifact is " + artifact
+      # determine the package type
+      data = platform_specific_data(artifact)
+      #puts "data is " + data
+      # format package name...tested and this is correct!
+      package_name = data[:platform] + "-" + data[:platform_version] + "-" + data[:architecture]
+      puts "package name is " + package_name
+      # get name information about the package so we know where to put it
+      # tested and this is correct!
+      if data[:package_format] == 'rpm'
+        promotion_path = File.join(@artifactory_uri, "/rpm__local/enterprise/", pe_version, "/repos/", package_name)
+        puts "rpm promotion path is " + promotion_path
+      else # 'deb'
+        promotion_path = File.join(@artifactory_uri, "/deb__local/enterprise/", pe_version, "/repos/", package_name)
+        puts "deb promotion path is " + promotion_path
+      # put package in correct place
+      end
+      #artifact.copy_or_move(:copy, promotion_path)
+    end
+
     # @param platform_tags [Array[String], String] optional, either a string, or
     #   an array of strings. These are the platform or platforms that we will
     #   download packages for.
