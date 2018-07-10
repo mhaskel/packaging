@@ -1,3 +1,5 @@
+require 'uri'
+
 module Pkg
 
   # The Artifactory class
@@ -230,44 +232,63 @@ module Pkg
       raise fail_message
     end
 
-
-
-    # this is shit
-    # @param package_ref [String] the package to be promoted
-    # @param pe_version [String] enterprise version promoting to
+    # Promotes a build based on build SHA or tag
+    # Depending on if it's an RPM or Deb package promote accordingly
+    # 'promote' by copying the package(s) to the enterprise directory on artifactory
     #
-    # we get the pe_version from enterprise-dist promote rake task
-    def promote_package(package_ref, pe_version)
-      # take package SHA from promote call, find the packages that are in artifactory
-      # and copy them into the enterprise repos and then update in enterprise-dist .json
-      #
-      #
-      # generic method that takes a package at a location and puts it in another
-      # take package_ref, find the package, copy it over to the correct location
-      # i believe this name is going to be the highest level...not sure. will have to ask
-
-      # find the package that needs to be promoted
-      #artifact = Artifactory::Resource::Artifact.search(name: package_ref)
-      puts package_ref
-      artifact = package_ref
-      puts "artifact is " + artifact
-      # determine the package type
-      data = platform_specific_data(artifact)
-      #puts "data is " + data
-      # format package name...tested and this is correct!
-      package_name = data[:platform] + "-" + data[:platform_version] + "-" + data[:architecture]
-      puts "package name is " + package_name
-      # get name information about the package so we know where to put it
-      # tested and this is correct!
-      if data[:package_format] == 'rpm'
-        promotion_path = File.join(@artifactory_uri, "/rpm__local/enterprise/", pe_version, "/repos/", package_name)
-        puts "rpm promotion path is " + promotion_path
-      else # 'deb'
-        promotion_path = File.join(@artifactory_uri, "/deb__local/enterprise/", pe_version, "/repos/", package_name)
-        puts "deb promotion path is " + promotion_path
-      # put package in correct place
+    # @param pkg [String] the package name ex. puppet-agent
+    # @param ref [String] tag or SHA of package(s) to be promoted
+    # @param pe_version [String] enterprise version promoting to (XX.YY)
+    # @param platform_tag [String] the platform tag of the artifact
+    #   ex. el-7-x86_64, ubuntu-18.04-amd64
+    def promote_package(pkg, ref, pe_version, platform_tag)
+      package_ref = sha_or_tag(ref)
+      platform, version, arch = Pkg::Platforms.parse_platform_tag(platform_tag)
+      search_name = "#{pkg}-#{package_ref}.#{platform}#{version}.#{arch}"
+      noarch_search_name = "#{pkg}-#{package_ref}.#{platform}#{version}.noarch"
+      # if ubuntu get codename
+      if platform == "ubuntu"
+        codename = Pkg::Platforms.codename_for_platform_version(platform, version)
+        search_name = "#{pkg}_#{package_ref}*#{codename}_#{arch}"
+        noarch_search_name = "#{pkg}_#{package_ref}*#{codename}_all"
       end
-      #artifact.copy_or_move(:copy, promotion_path)
+      # search for the artifact, if we can't find it, try searching for the noarch version
+      artifacts_to_promote = Artifactory::Resource::Artifact.search(name: search_name, :artifactory_uri => @artifactory_uri)
+      if artifacts_to_promote.empty?
+        artifacts_to_promote = Artifactory::Resource::Artifact.search(name: noarch_search_name, :artifactory_uri => @artifactory_uri)
+      end
+      artifacts_to_promote.each do |artifact|
+        uri = URI.parse(artifact.uri)
+        package_name = File.basename(uri.path)
+        data = platform_specific_data(platform_tag)
+        # set the promotion path based on whether rpm or deb
+        if data[:package_format] == 'rpm'
+          promotion_path = File.join("rpm__local/enterprise/", pe_version, "/repos/", platform_tag)
+        else # 'deb'
+          promotion_path = File.join("debian__local/pool/enterprise/", pe_version, "/repos/", platform_tag)
+        end
+        puts "promoting " + package_name + " to " + promotion_path
+        artifact.copy(promotion_path)
+      end
+    end
+
+    # Helper method to determine if we were provided a SHA or tag, including SNAPSHOTS
+    # returns a string to be used when searching for the artifact
+    #
+    # @param package_ref [String] the tag or SHA provided by the user when
+    #   running the promote job
+    #
+    # @return [String] the appropriate search term based what the user provided
+    def sha_or_tag(package_ref)
+      if package_ref.length == 40 && !package_ref[/\H/]
+        # ex. puppet-agent-*01a4311-1.el7.x86_64
+        return "*" + package_ref[0..6] + "-1"
+      elsif package_ref.include?('SNAPSHOT')
+        # ex. puppetserver-5.3.4-0.1SNAPSHOT.2018.07.10T2051.el7.x86_64
+        return package_ref.sub(/\.SNAPSHOT/, "-0.1SNAPSHOT")
+      # ex. puppet-agent-5.3.7-1.el7.x86_64
+      else return package_ref + "-1"
+      end
     end
 
     # @param platform_tags [Array[String], String] optional, either a string, or
