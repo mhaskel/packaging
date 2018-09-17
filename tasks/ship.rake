@@ -345,6 +345,7 @@ namespace :pl do
     snapshot_ref = "5.3.4.SNAPSHOT.2018.07.16T1356"
     artifact.promote_package("puppetserver", "5.3.4.SNAPSHOT.2018.07.10T2051", pe_version, "el-7-x86_64")
     artifact.promote_package("puppetserver", snapshot_ref, pe_version, "ubuntu-16.04-amd64")
+    artifact.promote_package('puppet-agent', '1.10.13', '2018.1', 'el-7-x86_64')
   end
 
 

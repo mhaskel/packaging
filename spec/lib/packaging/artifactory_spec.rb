@@ -175,7 +175,7 @@ describe 'artifactory.rb' do
   		# problems:
   		# can't verify valid tag...not sure where it gets verified or how?
   		#artifact.promote_package('el-6-x86_64', '2018.1')
-  		artifact.promote_package('puppet-agent-5.5.1.356.g01a4311-1.el7.x86_64.rpm', '2018.1')
+  		artifact.promote_package('puppet-agent', '1.10.13', '2018.1', 'el-7-x86_64')
   	end
   end
 
