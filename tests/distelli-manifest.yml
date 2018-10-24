@@ -3,5 +3,8 @@ morgan/packaging:
     - git remote -v
     - git fetch origin 'refs/tags/*:refs/tags/*'
     - git tag
-    - cd lib
     - pwd
+    - ls
+    - cd ../lib
+    - pwd
+    - ls
