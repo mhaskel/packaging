@@ -255,9 +255,9 @@ module Pkg
       end
       # set the promotion path based on whether rpm or deb
       if File.extname(artifact_name) == '.rpm'
-          promotion_path = File.join("rpm_enterprise__local/enterprise/#{pe_version}/repos/#{platform_tag}")
+          promotion_path = File.join("rpm_enterprise__local/#{pe_version}/repos/#{platform_tag}")
       else # 'deb'
-          promotion_path = File.join("debian_enterprise__local/pool/enterprise/#{pe_version}/repos/#{platform_tag}")
+          promotion_path = File.join("debian_enterprise__local/#{pe_version}/repos/#{platform_tag}")
       end
       puts "promoting #{artifact_name} to #{promotion_path}"
       artifact_to_promote[0].copy(promotion_path)
