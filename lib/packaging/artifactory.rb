@@ -261,6 +261,8 @@ module Pkg
       end
       puts "promoting #{artifact_name} to #{promotion_path}"
       artifact_to_promote[0].copy(promotion_path)
+      rescue
+        raise "PROMOTION FAILED: #{artifact_name} has already been promoted"
     end
 
     # @param platform_tags [Array[String], String] optional, either a string, or
