@@ -266,9 +266,9 @@ module Pkg
 
       # set the promotion path based on whether rpm or deb
       if File.extname(artifact_name) == '.rpm'
-        promotion_paths = repo_paths.map { |path| "rpm_enterprise__local/#{pe_version}/#{path}/#{platform_tag}/" }
+        promotion_paths = repo_paths.map { |path| "rpm_enterprise__local/#{pe_version}/#{path}/#{platform_tag}/#{artifact_name}" }
       else
-        promotion_paths = repo_paths.map { |path| "debian_enterprise__local/#{pe_version}/#{path}/#{platform_tag}/" }
+        promotion_paths = repo_paths.map { |path| "debian_enterprise__local/#{pe_version}/#{path}/#{platform_tag}/#{artifact_name}" }
       end
 
       begin
