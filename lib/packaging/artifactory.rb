@@ -242,27 +242,43 @@ module Pkg
     # @param pe_version [String] enterprise version promoting to (XX.YY)
     # @param platform_tag [String] the platform tag of the artifact
     #   ex. el-7-x86_64, ubuntu-18.04-amd64
-    def promote_package(pkg, ref, pe_version, platform_tag)
+    def promote_package(pkg, ref, pe_version, platform_tag, feature_branch: false, release_branch: false)
+      # load package metadata
       yaml_url = @artifactory_uri + "/generic__local/development/#{pkg}/#{ref}/#{ref}.yaml"
-      # grab the associated yaml file
       yaml_content = open(yaml_url){|f| f.read}
       yaml_data = YAML::load(yaml_content)
+
       # get the artifact name
       artifact_name = File.basename(yaml_data[:platform_data]["#{platform_tag}"][:artifact])
       artifact_to_promote = Artifactory::Resource::Artifact.search(name: artifact_name, :artifactory_uri => @artifactory_uri)
+
       if artifact_to_promote.empty?
-        puts "Error: could not find PKG=#{pkg} at REF=#{git_ref} for #{platform_tag}"
+        raise "Error: could not find PKG=#{pkg} at REF=#{git_ref} for #{platform_tag}"
       end
+
+      # default to shipping to main repos and feature repos
+      repo_paths = ['repos', 'feature/repos']
+      if feature_branch
+        repo_paths = ['feature/repos']
+      elsif release_branch
+        repo_paths = ['release/repos']
+      end
+
       # set the promotion path based on whether rpm or deb
       if File.extname(artifact_name) == '.rpm'
-          promotion_path = "rpm_enterprise__local/#{pe_version}/repos/#{platform_tag}"
-      else # 'deb'
-          promotion_path = "debian_enterprise__local/#{pe_version}/repos/#{platform_tag}"
+        promotion_paths = repo_paths.map { |path| "rpm_enterprise__local/#{pe_version}/#{path}/#{platform_tag}" }
+      else
+        promotion_paths = repo_paths.map { |path| "debian_enterprise__local/#{pe_version}/#{path}/#{platform_tag}" }
       end
-      puts "promoting #{artifact_name} to #{promotion_path}"
-      artifact_to_promote[0].copy(promotion_path)
+
+      begin
+        promotion_paths.each do |path|
+          puts "promoting #{artifact_name} to #{path}"
+          artifact_to_promote[0].copy(path)
+        end
       rescue
-        raise "PROMOTION FAILED: #{artifact_name} has already been promoted"
+        puts "Skipping promotion of #{artifact_name}; it has already been promoted"
+      end
     end
 
     # @param platform_tags [Array[String], String] optional, either a string, or
