@@ -244,9 +244,13 @@ module Pkg
     #   ex. el-7-x86_64, ubuntu-18.04-amd64
     def promote_package(pkg, ref, pe_version, platform_tag, feature_branch: false, release_branch: false)
       # load package metadata
-      yaml_url = @artifactory_uri + "/generic__local/development/#{pkg}/#{ref}/#{ref}.yaml"
-      yaml_content = open(yaml_url){|f| f.read}
-      yaml_data = YAML::load(yaml_content)
+      yaml_file = retrieve_yaml_data_file
+      yaml_data = Pkg::Config.config_from_yaml(yaml_file)
+      #  platform_data = yaml_data[:platform_data]
+      #  platform_tags = platform_data.keys
+      #yaml_url = @artifactory_uri + "/generic__local/development/#{pkg}/#{ref}/#{ref}.yaml"
+      #yaml_content = open(yaml_url){|f| f.read}
+      #yaml_data = YAML::load(yaml_content)
 
       # get the artifact name
       artifact_name = File.basename(yaml_data[:platform_data]["#{platform_tag}"][:artifact])
