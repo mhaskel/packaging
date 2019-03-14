@@ -252,7 +252,7 @@ module Pkg
       yaml_data = YAML::load(yaml_content)
 
       # get the artifact name
-      artifact_name = package_name(yaml_data, platform_tag)
+      artifact_name = package_name(yaml_data[:platform_data], platform_tag)
       artifact_to_promote = Artifactory::Resource::Artifact.search(name: artifact_name, :artifactory_uri => @artifactory_uri)
 
       if artifact_to_promote.empty?
