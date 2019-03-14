@@ -242,7 +242,7 @@ module Pkg
     # @param pe_version [String] enterprise version promoting to (XX.YY)
     # @param platform_tag [String] the platform tag of the artifact
     #   ex. el-7-x86_64, ubuntu-18.04-amd64
-    def promote_package(pkg, ref, pe_version, platform_tag, feature_branch: false, release_branch: false)
+    def promote_package(pkg, ref, platform_tag, repo_paths = ['repos'] )
       # load package metadata
       yaml_url = @artifactory_uri + "/generic__local/development/#{pkg}/#{ref}/#{ref}.yaml"
       yaml_content = open(yaml_url){|f| f.read}
@@ -256,19 +256,11 @@ module Pkg
         raise "Error: could not find PKG=#{pkg} at REF=#{git_ref} for #{platform_tag}"
       end
 
-      # default to shipping to main repos and feature repos
-      repo_paths = ['repos', 'feature/repos']
-      if feature_branch
-        repo_paths = ['feature/repos']
-      elsif release_branch
-        repo_paths = ['release/repos']
-      end
-
       # set the promotion path based on whether rpm or deb
       if File.extname(artifact_name) == '.rpm'
-        promotion_paths = repo_paths.map { |path| "rpm_enterprise__local/#{pe_version}/#{path}/#{platform_tag}/#{artifact_name}" }
+        promotion_paths = repo_paths.compact.map { |path| "rpm_enterprise__local/#{path}/#{platform_tag}/#{artifact_name}" }
       else
-        promotion_paths = repo_paths.map { |path| "debian_enterprise__local/#{pe_version}/#{path}/#{platform_tag}/#{artifact_name}" }
+        promotion_paths = repo_paths.compact.map { |path| "debian_enterprise__local/#{path}/#{platform_tag}/#{artifact_name}" }
       end
 
       begin
