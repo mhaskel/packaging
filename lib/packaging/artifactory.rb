@@ -264,7 +264,7 @@ module Pkg
       if File.extname(artifact_name) == '.rpm'
         promotion_paths = Array(repositories).compact.map { |repo| "rpm_#{repo}/#{platform_tag}/#{artifact_name}" }
       else
-        promotion_paths = Array(repositories).compact.map { |path| "debian_#{repo}/#{platform_tag}/#{artifact_name}" }
+        promotion_paths = Array(repositories).compact.map { |repo| "debian_#{repo}/#{platform_tag}/#{artifact_name}" }
       end
 
       begin
