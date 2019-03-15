@@ -272,7 +272,7 @@ module Pkg
           puts "promoting #{artifact_name} to #{path}"
           artifact_to_promote[0].copy(path)
         end
-      rescue Error::HTTPError => e
+      rescue Artifactory::Error::HTTPError => e
         if e.message =~ /destination and source are the same/i
           puts "Skipping promotion of #{artifact_name}; it has already been promoted"
         else
