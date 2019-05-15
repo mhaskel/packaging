@@ -1,0 +1,2 @@
+# -*- ruby -*-
+mod 'prime_gpg', local:true

@@ -1,0 +1,21 @@
+{
+  "description": "prime the gpg key (run with --tty)",
+  "implementations": [
+    { "name": "prime.sh", "requirements": ["shell"] }
+  ],
+  "input_method": "environment",
+  "parameters": {
+    "directory": {
+      "description": "Directory to execute the rake task from (default: /var/lib/jenkins/enterprise-dist)",
+      "type": "Optional[String[1]]"
+    },
+    "gpg2": {
+      "description": "Whether or not the target host is using GPGv2 (default: false)",
+      "type": "Optional[Boolean]"
+    },
+    "use_rvm": {
+      "description": "Whether or not the target host is using rvm (default: false)",
+      "type": "Optional[Boolean]"
+    }
+  }
+}
