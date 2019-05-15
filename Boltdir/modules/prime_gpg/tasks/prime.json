@@ -3,7 +3,7 @@
   "implementations": [
     { "name": "prime.sh", "requirements": ["shell"] }
   ],
-  "input_method": "environment",
+  "input_method": "stdin",
   "parameters": {
     "directory": {
       "description": "Directory to execute the rake task from (default: /var/lib/jenkins/enterprise-dist)",
@@ -16,6 +16,11 @@
     "use_rvm": {
       "description": "Whether or not the target host is using rvm (default: false)",
       "type": "Optional[Boolean]"
+    },
+    "passphrase": {
+      "description": "The passphrase for the gpg key",
+      "sensitive": "true",
+      "type": "String[1]"
     }
   }
 }

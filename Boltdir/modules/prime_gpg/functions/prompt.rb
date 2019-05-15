@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Prompt for a value from the user
-Puppet::Functions.create_function(:'io::prompt') do
+Puppet::Functions.create_function(:'prime_gpg::prompt') do
   dispatch :prompt do
     required_param 'String', :banner
     optional_param 'Boolean', :sensitive
