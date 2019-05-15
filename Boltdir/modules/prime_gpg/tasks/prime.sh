@@ -8,8 +8,6 @@ function strip_quotes {
 }
 
 params=$(</dev/stdin)
-echo $params
-echo ""
 
 directory=$(strip_quotes $(echo "$params" | jq '.directory'))
 if [ "$directory" == "null" ]; then
@@ -26,8 +24,10 @@ if [ "$use_rvm" == "null" ]; then
   use_rvm=false
 fi
 
+passphrase=$(strip_quotes $(echo "$params" | jq '.passphrase'))
+
 if [ "$(realpath $directory)" != "$directory" ]; then
-  echo "'directory' must be an absolute path with no '..'"
+  echo '{ "_error": { "msg": "'directory' must be an absolute path with no '..'", "details": { "exit_code": "1" }}}'
   exit 1
 fi
 
