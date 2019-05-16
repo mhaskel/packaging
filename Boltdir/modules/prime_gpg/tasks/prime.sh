@@ -24,6 +24,11 @@ if [ "$use_rvm" == "null" ]; then
   use_rvm=false
 fi
 
+user=$(strip_quotes $(echo "$params" | jq '.user'))
+if [ "$user" == "null" ]; then
+  user=jenkins
+fi
+
 passphrase=$(strip_quotes $(echo "$params" | jq '.passphrase'))
 
 if [ "$(realpath $directory)" != "$directory" ]; then
@@ -32,44 +37,44 @@ if [ "$(realpath $directory)" != "$directory" ]; then
 fi
 
 # kill gpg-agent
-result=$(ps -u jenkins | grep gpg-agent)
+result=$(ps -u $user | grep gpg-agent)
 if [ $? -eq 0 ]; then 
-  echo $result | awk '{print $1}' | xargs echo "would kill pid"
-  result=$(ps -u jenkins | grep gpg-agent)
+  echo $result | awk '{print $1}' | sudo xargs kill
+  result=$(ps -u $user | grep gpg-agent)
   if [ $? -eq 0 ]; then
-    echo $result | awk '{print $1}' | xargs echo "would kill -9 pid"
+    echo $result | awk '{print $1}' | sudo xargs kill -9
   fi
 else
   echo "no gpg-agent detected"
 fi
 
 # kill pinentry
-result=$(ps -u jenkins | grep pinentry) 
+result=$(ps -u $user | grep pinentry) 
 if [ $? -eq 0 ]; then
-  echo $result | awk '{print $1}' | xargs echo "would kill pid"
-  result=$(ps -u jenkins | grep pinentry) 
+  echo $result | awk '{print $1}' | sudo xargs kill
+  result=$(ps -u $user | grep pinentry) 
   if [ $? -eq 0 ]; then
-    echo $result | awk '{print $1}' | xargs echo "would kill -9 pid"
+    echo $result | awk '{print $1}' | sudo xargs kill -9
   fi
 else
   echo "no pinentry detected"
 fi
 
-sudo chown jenkins:allstaff $(tty)
+sudo chown $user:allstaff $(tty)
 
 if [ "$gpg2" == "true" ]; then
-  echo 'would run eval $(gpg-agent --daemon --default-cache-ttl 2592000 --max-cache-ttl 2592000)'
+  eval $(gpg-agent --daemon --default-cache-ttl 2592000 --max-cache-ttl 2592000)
 else
-  echo 'would run eval $(gpg-agent --use-standard-socket --daemon --default-cache-ttl 2592000 --max-cache-ttl 2592000 --write-env-file "/var/lib/jenkins/.gpg-agent-info")'
+  eval $(gpg-agent --use-standard-socket --daemon --default-cache-ttl 2592000 --max-cache-ttl 2592000 --write-env-file "~${user}/.gpg-agent-info")
 fi
 
 
 if [ "$use_rvm" == "true" ]; then
-  echo "would run rvm use system"
+  rvm use system
 fi
 
 cd $directory
 echo "pwd == $(pwd)"
 echo "my id is $(id)"
-echo "would run rake prime_gpg"
+echo rake prime_gpg
 exit $?

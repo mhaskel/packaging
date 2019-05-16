@@ -17,6 +17,10 @@
       "description": "Whether or not the target host is using rvm (default: false)",
       "type": "Optional[Boolean]"
     },
+    "user": {
+      "description": "The user to prime the gpg key for (default: jenkins)",
+      "type": "Optional[String]"
+    },
     "passphrase": {
       "description": "The passphrase for the gpg key",
       "sensitive": "true",
