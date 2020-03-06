@@ -415,7 +415,7 @@ module Pkg
       manifest.each do |dist, packages|
         puts "Grabbing the #{dist} packages from artifactory"
         packages.each do |name, info|
-          artifacts = Artifactory::Resource::Artifact.checksum_search(md5: "#{info["md5"]}", repos: ["rpm_enterprise__local", "debian_enterprise__local"])
+          artifacts = Artifactory::Resource::Artifact.checksum_search(md5: "#{info["md5"]}", repos: ["rpm_enterprise__local"])
           artifact_to_download = artifacts.select { |artifact| artifact.download_uri.include? remote_path }.first
           if artifact_to_download.nil?
             filename = info["filename"] || name
